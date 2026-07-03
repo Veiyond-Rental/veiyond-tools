@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veiyond — Maintenance Calculator</title>
+<style>
+  :root{
+    --ink:#12263A; --navy:#002B49; --dim:#6B7A88; --faint:#93A1AD;
+    --gold:#B08A3E;
+    --red:#C24747; --red-bg:rgba(214,86,86,.12);
+    --amber:#A97B2B; --amber-bg:rgba(217,178,95,.16);
+    --green:#3E8E63; --green-bg:rgba(87,183,131,.13);
+    --blue:#3E6E96; --blue-bg:rgba(90,150,200,.13);
+    --card:rgba(255,255,255,.66); --card-line:rgba(255,255,255,.9);
+    --shadow:0 12px 32px rgba(0,43,73,.09), 0 2px 6px rgba(0,43,73,.05);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+  body{
+    font-family:'Montserrat','Avenir Next','Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;
+    color:var(--ink); min-height:100vh; padding:26px 22px 18px;
+    background:
+      radial-gradient(900px 420px at 12% -8%, rgba(90,150,200,.14), transparent 60%),
+      radial-gradient(800px 400px at 95% 8%, rgba(217,178,95,.13), transparent 55%),
+      linear-gradient(160deg,#F4F3EF 0%,#EBEEF2 100%);
+  }
+  .wrap{max-width:960px;margin:0 auto}
+  .eyebrow{font-size:9.5px;font-weight:700;letter-spacing:.24em;color:var(--dim);text-transform:uppercase}
+  .eyebrow .v{color:var(--gold)}
+  h1{font-size:22px;font-weight:800;color:var(--navy);margin:6px 0 3px;letter-spacing:-.01em}
+  .sub{font-size:12.5px;color:var(--dim);margin-bottom:18px}
+  .card{
+    background:var(--card); border:1px solid var(--card-line); border-radius:20px;
+    backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+    box-shadow:var(--shadow);
+  }
+  .inputrow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+  @media(max-width:760px){.inputrow{grid-template-columns:repeat(2,1fr)}}
+  .inputcard{padding:13px 14px 11px}
+  .inputcard label{display:block;font-size:8.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:7px}
+  .inputcard label small{text-transform:none;letter-spacing:.04em;font-weight:500;color:var(--faint)}
+  .inputcard input{
+    width:100%;background:rgba(255,255,255,.75);border:1px solid rgba(0,43,73,.1);border-radius:11px;
+    color:var(--navy);font:inherit;font-weight:700;font-size:15px;padding:8px 10px;text-align:right;
+    outline:none;font-variant-numeric:tabular-nums;transition:border-color .15s, box-shadow .15s;
+  }
+  .inputcard input[type=date]{text-align:left;font-size:12.5px;font-weight:600}
+  .inputcard input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(176,138,62,.14)}
+  .inputcard input::placeholder{color:var(--faint);font-weight:500}
+  .inputcard .hint{font-size:9px;color:var(--faint);margin-top:5px;text-align:right}
+  .statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
+  @media(max-width:760px){.statrow{grid-template-columns:1fr 1fr}}
+  .stat{padding:15px 16px 13px}
+  .stat .label{font-size:8.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+  .stat .big{font-size:27px;font-weight:800;color:var(--navy);margin-top:6px;font-variant-numeric:tabular-nums;line-height:1.1}
+  .stat .big small{font-size:12px;font-weight:600;color:var(--dim)}
+  .stat.alarm .big{color:var(--red)}
+  .stat .note{font-size:10.5px;color:var(--dim);margin-top:4px;line-height:1.5}
+  .stat .note b{color:var(--ink)}
+  .tenure{padding:12px 16px;margin-bottom:12px;font-size:11.5px;color:var(--dim);line-height:1.65}
+  .tenure b{color:var(--navy)}
+  .listcard{padding:6px 16px 10px}
+  .thead,.row{display:grid;grid-template-columns:1.5fr .6fr 1.15fr 1.25fr .8fr;gap:12px;align-items:center}
+  .thead{font-size:8px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--faint);padding:12px 2px 8px}
+  .thead :last-child{text-align:right}
+  .row{padding:10px 2px;border-top:1px solid rgba(0,43,73,.06);font-size:12.5px}
+  .row .n{font-weight:600;color:var(--ink)}
+  .row .n small{display:block;font-weight:500;font-size:9.5px;color:var(--faint);margin-top:1px}
+  .row .c{font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums}
+  .row .c small{display:block;font-weight:600;font-size:9px;color:var(--gold)}
+  .row .m{font-size:11px;color:var(--dim);line-height:1.5;font-variant-numeric:tabular-nums}
+  .row .m b{color:var(--ink);font-weight:600}
+  .pill{
+    font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    padding:4px 10px;border-radius:99px;justify-self:end;white-space:nowrap;
+  }
+  .p-win{background:var(--red-bg);color:var(--red)}
+  .p-soon{background:var(--amber-bg);color:var(--amber)}
+  .p-pace{background:var(--green-bg);color:var(--green)}
+  .p-od{background:var(--blue-bg);color:var(--blue)}
+  .empty{padding:30px 0 24px;text-align:center;color:var(--faint);font-size:13px}
+  .foot{margin-top:14px;font-size:9.5px;color:var(--faint);line-height:1.7;padding:0 4px}
+  .foot b{color:var(--dim)}
+  @media(max-width:680px){
+    .thead{display:none}
+    .row{grid-template-columns:1fr auto;row-gap:3px}
+    .row .c{text-align:right}
+    .row .m{grid-column:1 / -1}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow"><span class="v">VEIYOND</span> · MAINTENANCE</div>
+  <h1>Maintenance Calculator</h1>
+  <div class="sub">One reading, the whole schedule — what's owed, when, and how many times.</div>
+
+  <div class="inputrow">
+    <div class="card inputcard">
+      <label>Odometer</label>
+      <input id="odo" type="text" inputmode="numeric" placeholder="type miles">
+      <div class="hint">&nbsp;</div>
+    </div>
+    <div class="card inputcard">
+      <label>Pace · mi / mo</label>
+      <input id="pace" type="text" inputmode="numeric" value="3,500">
+      <div class="hint" id="paceyr">≈ 42,000 mi / yr</div>
+    </div>
+    <div class="card inputcard">
+      <label>Date started <small>· optional</small></label>
+      <input id="start" type="date">
+      <div class="hint">tenure audit</div>
+    </div>
+    <div class="card inputcard">
+      <label>Start miles <small>· optional</small></label>
+      <input id="startodo" type="text" inputmode="numeric" placeholder="refines">
+      <div class="hint">else pace-derived</div>
+    </div>
+  </div>
+
+  <div id="out">
+    <div class="card" style="padding:15px 18px 13px">
+      <div style="font-size:11.5px;line-height:1.8;color:var(--dim)">
+        <b style="color:var(--navy)">Static preview — the calculator needs interactive mode.</b>
+        Open this widget via a /html block or in a browser to compute live.
+        <b style="color:var(--navy)">Quick reference at 3,500 mi/mo:</b>
+        Oil 10k ≈ 2.9 mo · Rotation 8k ≈ 2.3 mo · Filters 30k ≈ 8.6 mo · Brakes 50k ≈ 14.3 mo ·
+        Tires 60k ≈ 17.1 mo · Plugs / Belt / Trans 70k ≈ 20 mo ·
+        Suspension / Wipers 12 mo · Deep Detail 3 mo · Monthly Detail 1 mo · Battery / Wax on-demand.
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>Calculator, not a record</b> — the Maintenance cards hold what was actually done. Counts assume the factory schedule from mile 0 at your pace.
+    <b>Due window</b> = milestone crossed &lt;1,000 mi ago — verify or do now.
+    <b>Date started</b> unlocks tenure counts · <b>start miles</b> makes them exact. Inputs save on this device only.
+  </div>
+</div>
+
+<script>
+// ============ CATALOG (mi = mileage interval, mo = months interval, null/null = on-demand) ============
+const CATALOG = {
+  "Oil Change & Filter": {mi:10000, mo:null},
+  "Tire Rotation":       {mi:8000,  mo:null},
+  "Air & Cabin Filter":  {mi:30000, mo:null},
+  "Brake Pads & Rotors": {mi:50000, mo:null},
+  "Tire Replacement":    {mi:60000, mo:null},
+  "Spark Plugs":         {mi:70000, mo:null},
+  "Serpentine Belt":     {mi:70000, mo:null},
+  "Transmission Fluid":  {mi:70000, mo:null},
+  "Suspension Check":    {mi:null,  mo:12},
+  "Windshield Wipers":   {mi:null,  mo:12},
+  "Deep Detail":         {mi:null,  mo:3},
+  "Monthly Detail":      {mi:null,  mo:1},
+  "Battery Check":       {mi:null,  mo:null},
+  "Wax Vehicle":         {mi:null,  mo:null}
+};
+const WINDOW_MI = 1000, SOON_MI = 500, SOON_DY = 14, WINDOW_DY = 14;
+// =======================================================================================================
+
+const KEY="veiyond-once-over"; // unchanged key — saved inputs carry over
+const store=(()=>{try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){return{}}})();
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}};
+const fmt=n=>Math.round(n).toLocaleString("en-US");
+const parseNum=s=>{const v=parseInt(String(s).replace(/[^0-9]/g,""),10);return isNaN(v)?null:v};
+const MS_MO=30.44*86400000;
+function dateAt(mo){
+  const d=new Date(Date.now()+mo*MS_MO);
+  return d.toLocaleDateString("en-US", Math.abs(mo)<11?{month:"short",day:"numeric"}:{month:"short",year:"numeric"});
+}
+const shortDate=iso=>new Date(iso+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+
+function evalSvc(svc, ctx){
+  const {odo, pace, tenure}=ctx, iv=CATALOG[svc];
+  if(iv.mi==null && iv.mo==null)
+    return {svc, cls:"p-od", state:"On-demand", count:"—", last:"—", next:"serviced when needed", sort:2e9};
+  if(iv.mi==null){
+    const eq=iv.mo*pace;
+    const sub=`every ${iv.mo} mo · ≈ ${fmt(eq)} mi at pace`;
+    if(!tenure) return {svc, sub, cls:"p-pace", state:"Recurring", count:"—", last:"—",
+      next:`from today — every ${iv.mo} mo <b>(next ≈ ${dateAt(iv.mo)})</b>`, sort:1e9+iv.mo};
+    const n=Math.floor(tenure.months/iv.mo);
+    const lastMo=n*iv.mo, nextMo=(n+1)*iv.mo;
+    const daysPast=(tenure.months-lastMo)*30.44, daysUntil=(nextMo-tenure.months)*30.44;
+    const last = n===0 ? "not yet in tenure" : `<b>≈ ${dateAt(-(daysPast/30.44))}</b> (cycle ${n})`;
+    const next = `<b>≈ ${dateAt(daysUntil/30.44)}</b> — in ${Math.round(daysUntil)} d`;
+    let cls,state,sort;
+    if(n>0 && daysPast<=WINDOW_DY){ cls="p-win"; state="Due window"; sort=-1e6+daysPast; }
+    else if(daysUntil<=SOON_DY){ cls="p-soon"; state="Due soon"; sort=daysUntil*pace/30.44; }
+    else { cls="p-pace"; state="On pace"; sort=daysUntil*pace/30.44+1e5; }
+    return {svc, sub, cls, state, count:"—", tCount:n, last, next, sort,
+            inWindow:state==="Due window", tExp:n};
+  }
+  const interval=iv.mi;
+  const count=Math.floor(odo/interval);
+  const lastAt=count*interval, nextAt=(count+1)*interval;
+  const past=odo-lastAt, until=nextAt-odo;
+  const last = count===0 ? "not yet in its life"
+    : `at ${fmt(lastAt)} mi <b>(≈ ${dateAt(-past/pace)})</b>`;
+  const next = `at ${fmt(nextAt)} mi — in ${fmt(until)} mi <b>(≈ ${dateAt(until/pace)})</b>`;
+  let cls,state,sort;
+  if(count>0 && past<=WINDOW_MI){ cls="p-win"; state="Due window"; sort=-1e6+past; }
+  else if(until<=SOON_MI){ cls="p-soon"; state="Due soon"; sort=until; }
+  else { cls="p-pace"; state="On pace"; sort=until+1e5; }
+  const tCount = ctx.tenure ? Math.max(0, count - Math.floor(ctx.tenure.startOdo/interval)) : null;
+  return {svc, sub:`every ${fmt(interval)} mi`, cls, state, count:"×"+count, tCount, last, next, sort,
+          inWindow:state==="Due window", until, isMi:true, tExp:tCount||0};
+}
+
+function render(){
+  const pace=Number(store.pace??3500);
+  const odo=store.odo!=null?Number(store.odo):null;
+  document.getElementById("paceyr").textContent="≈ "+fmt(pace*12)+" mi / yr";
+  const out=document.getElementById("out");
+  if(odo==null){
+    out.innerHTML=`<div class="card"><div class="empty">Type an odometer reading to run the audit.</div></div>`;
+    return;
+  }
+  let tenure=null;
+  if(store.start){
+    const months=Math.max(0,(Date.now()-new Date(store.start+"T00:00:00").getTime())/MS_MO);
+    if(months>0){
+      const startOdoIn=store.startodo!=null?Number(store.startodo):null;
+      const startOdo=startOdoIn!=null?startOdoIn:Math.max(0,Math.round(odo-months*pace));
+      const miles=odo-startOdo;
+      tenure={months, startOdo, miles, exact:startOdoIn!=null,
+              actualPace: months>0.25 && miles>0 ? miles/months : null};
+    }
+  }
+  const ctx={odo,pace,tenure};
+  const rows=Object.keys(CATALOG).map(s=>evalSvc(s,ctx)).sort((a,b)=>a.sort-b.sort);
+  const win=rows.filter(r=>r.inWindow);
+  const nextUp=rows.find(r=>r.isMi&&!r.inWindow);
+  const total=rows.reduce((s,r)=>s+(r.count&&r.count!=="—"?parseInt(r.count.slice(1)):0),0);
+  const tTotal=tenure?rows.reduce((s,r)=>s+(r.tExp||0),0):null;
+  out.innerHTML=`
+    <div class="statrow">
+      <div class="card stat"><div class="label">Expected — lifetime</div>
+        <div class="big">${total}<small> services</small></div>
+        <div class="note">at <b>${fmt(odo)} mi</b>, factory schedule</div></div>
+      <div class="card stat ${win.length?"alarm":""}"><div class="label">Due window</div>
+        <div class="big">${win.length}</div>
+        <div class="note">${win.length?"verify records or do now":"nothing recently crossed"}</div></div>
+      <div class="card stat"><div class="label">Next up</div>
+        <div class="big" style="font-size:17px;line-height:1.3">${nextUp?nextUp.svc:"—"}</div>
+        <div class="note">${nextUp?`in <b>${fmt(nextUp.until)} mi</b> · ≈ ${dateAt(nextUp.until/pace)}`:""}</div></div>
+    </div>
+    ${tenure?`<div class="card tenure">Under care since <b>${shortDate(store.start)}</b> — ${tenure.months.toFixed(1)} mo · ${tenure.exact?"":"≈ "}${fmt(tenure.miles)} mi from ${tenure.exact?"":"≈ "}${fmt(tenure.startOdo)} mi${tenure.actualPace?` · actual pace <b>${fmt(tenure.actualPace)} mi/mo</b>${tenure.exact?` vs ${fmt(pace)} assumed`:""}`:""} — tenure services expected: <b>${tTotal}</b>.</div>`:""}
+    <div class="card listcard">
+      <div class="thead"><span>Service</span><span>Should be</span><span>Last should've been</span><span>Next due</span><span>State</span></div>
+      ${rows.map(r=>`
+        <div class="row">
+          <span class="n">${r.svc}${r.sub?`<small>${r.sub}</small>`:""}</span>
+          <span class="c">${r.count}${tenure&&r.tCount!=null?`<small>tenure ×${r.tCount}</small>`:""}</span>
+          <span class="m">${r.last}</span>
+          <span class="m">${r.next}</span>
+          <span class="pill ${r.cls}">${r.state}</span>
+        </div>`).join("")}
+    </div>`;
+}
+
+function bind(id,key,numeric){
+  const el=document.getElementById(id);
+  el.addEventListener("change",e=>{
+    if(numeric){
+      const v=parseNum(e.target.value);
+      if(v!=null&&v>0){ store[key]=v; e.target.value=fmt(v); } else { delete store[key]; e.target.value=""; }
+    } else {
+      if(e.target.value) store[key]=e.target.value; else delete store[key];
+    }
+    save(); render();
+  });
+}
+bind("odo","odo",true); bind("pace","pace",true); bind("start","start",false); bind("startodo","startodo",true);
+(function init(){
+  if(store.odo!=null) document.getElementById("odo").value=fmt(store.odo);
+  if(store.pace!=null) document.getElementById("pace").value=fmt(store.pace);
+  if(store.start) document.getElementById("start").value=store.start;
+  if(store.startodo!=null) document.getElementById("startodo").value=fmt(store.startodo);
+  render();
+})();
+</script>
+</body>
+</html>
